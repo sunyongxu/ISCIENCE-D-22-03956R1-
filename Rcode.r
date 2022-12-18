@@ -173,22 +173,23 @@ a<-ggplot() +
 a
 
 
+
 #############  Fig 6 ################
 library(ggrepel)
+library('vegan')
+library(rdacca.hp)
 rm(list=ls())
 
-
-rock3<-read.xlsx("rda.xlsx",sheet = 1,startRow = 1)
-
+spec<-read.xlsx("rda.xlsx",sheet = 1,startRow = 1)
+spec<- decostand(spec,"hellinger",scale=T)
 env2<-read.xlsx("rda.xlsx",sheet = 2,startRow = 1)
-
 rda_tb<-cca(spec~.,env2,na.action = na.omit)
-
 ef=envfit(rda_tb,env2,permu=999)
 ef
 vif.cca(rda_tb)
 
 rda_tb_forward_p <- ordistep(rda(spec~1, env2, scale = T), scope = formula(rda_tb), direction = 'forward', permutations = 999,na.action = na.omit)
+
 
 mod2 <- rda(spec ~ dn + time + microhabitat  +  temperature  ,env2,scale = T)      
 vif.cca(mod2) 
@@ -196,14 +197,17 @@ anova(mod2)
 summary(mod2) 
 
 
+
 ef=envfit(mod2,env2,permu=999)
 ef
 
 
-library(rdacca.hp)
 rdacca.hp(spec,env2,scale = T )
 
-
+mod2 <- rda(spec ~ dn + time + microhabitat  + temperature  ,env2,scale =T)      
+vif.cca(mod2) 
+anova(mod2)   
+summary(mod2) 
 
 r2 <- RsquareAdj(mod2)
 rda_noadj <- r2$r.squared  
@@ -235,7 +239,7 @@ b<-ggplot(data=sp) +
   geom_point(mapping=aes(x=RDA1,y=RDA2,fill = lab,shape=lab),size =5,alpha=.7)+ 
   geom_segment(data = cn,aes(x = 0, y = 0, xend = RDA1, yend = RDA2), 
                arrow = arrow(length =unit(0.3,"cm"),type = "closed",angle=22.5),linetype=1,
-               colour ="black",size=0.6)+ 
+               colour ="black",size=0.6)+
   geom_text_repel(data =cn,aes(x=RDA1/2,y=RDA2/2,label=row.names(cn)),size=3,
                   color='black')+ 
   theme_bw()+labs( x= "RDA1 (14.15%)", y ="RDA2 (3.02%)",color ='')+
@@ -245,6 +249,7 @@ b<-ggplot(data=sp) +
         axis.text = element_text(color='black',size=10.5),
         panel.grid = element_blank())+
   theme(legend.position = "right")
+
 b
 
 
